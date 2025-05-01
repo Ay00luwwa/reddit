@@ -1,23 +1,19 @@
-import scrapy
+import requests
 
+url = "https://www.reddit.com/r/funny/.json"
+headers = {"User-Agent": "Mozilla/5.0"}
 
-class RedditJobSpider(scrapy.Spider):
-    name = "reddit_job"
-    allowed_domains = ["reddit.com"]
+response = requests.get(url, headers=headers)
 
-    start_urls = ['https://www.reddit.com/r/funny/']
-
-    def parse(self, response):
-        print (response.css("a.title::text").extract())
-        print (response.css("a.title::attr(href)").extract())
-        print (response.css("div.score.unvoted::attr(title)").extract())
-
-        for item in zip(titles, hrefs, scores):
-
-            new_item = RedditItem()
-            
-            new_item['title'] = item[0]
-            new_item['url'] = item[1]
-            new_item['score'] = item[2]
-            
-            yield new_item
+if response.status_code == 200:
+    data = response.json()
+    posts = data['data']['children']
+    
+    for post in posts:
+        title = post['data']['title']
+        link = post['data']['url']
+        print(f"Title: {title}")
+        print(f"Link: {link}")
+        print()
+else:
+    print(f"Failed to fetch: {response.status_code}")
